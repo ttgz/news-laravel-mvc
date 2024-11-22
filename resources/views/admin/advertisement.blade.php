@@ -7,9 +7,9 @@
             @if (session('success'))
                 <div id="hien-an" class="bg-success" style="height:50px"> {{ session('success') }}</div>
             @endif
-            <form id="formAd" class="" action="" method="post">
+            <form id="formAd" class="" action="@isset($advertisement){{route('advertisement.update',['advertisement'=>$advertisement->id])}} @endisset" method="post">
                 @csrf
-                @method('POST')
+                @isset($advertisement) @method('put') @endisset
                 <div class="mb-3">
                     <label for="" class="form-label">ID</label>
                     <input type="text" readonly name="id"
@@ -50,7 +50,7 @@
     <hr>
     <div class="row container" style="margin-top:30px">
         <div class="col-lg-12">
-            <form action="/admin/advertisement/search">
+            <form action="{{route('advertisement.search')}}" method="get">
                 <div class="input-group">
                     <div class="form-outline" data-mdb-input-init>
                         <input type="search" id="form1" name="key"class="form-control" />
@@ -76,6 +76,7 @@
                         <th scope="col">Image</th>
                         <th scope="col">Status</th>
                         <th scope="col">Edit</th>
+                        <th scope="col">Delete</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -88,10 +89,15 @@
                                 <td> <img src="{{asset($advertisement->image)}}" alt="" style="width:60px"> </td>
                                 <td>{{ $advertisement->status}}</td>
                                 <td>
-                                    <form action="/admin/advertisement/edit/{{ $advertisement->id }}" method="post"> @csrf<button
+                                    <form action="{{route('advertisement.edit',['advertisement'=>$advertisement->id])}}" method="get"> @csrf<button
                                             type="submit" class="btn btn-primary" id="changeAction">Edit</button> </form>
                                 </td>
-
+                                <td>
+                                    <form action="{{route('advertisement.destroy',['advertisement'=>$advertisement->id])}}" method="post"> 
+                                        @csrf 
+                                        @method("delete")
+                                        <button type="submit" class="btn btn-primary" id="changeAction">Delete</button> </form>
+                                </td>
                             </tr>
                         @endforeach
                     @endisset

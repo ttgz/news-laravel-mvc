@@ -10,9 +10,9 @@
             @endif
 
             
-            <form id="formSubcribe" class="" action="" method="post">
+            <form id="formSubcribe" class="" action="@isset($subcribe){{route('subcribe.update',['subcribe'=>$subcribe->id])}} @endisset " method="post">
                 @csrf
-                @method('POST')
+                @isset($subcribe) @method('put') @endisset
                 <div class="mb-3">
                     <label for="" class="form-label">ID</label>
                     <input type="text" readonly name="id"
@@ -35,7 +35,7 @@
     <hr>
     <div class="row container" style="margin-top:30px">
         <div class="col-lg-12">
-            <form action="/admin/subcribe/search">
+            <form action="{{route('subcribe.search')}}" method="get">
                 <div class="input-group">
                     <div class="form-outline" data-mdb-input-init>
                         <input type="search" id="form1" name="key"class="form-control" />
@@ -67,9 +67,16 @@
                                 <th scope="row"> {{ $subcribe->id }}</th>
                                 <td>{{ $subcribe->email }}</td>
                                 <td>
-                                    <form action="/admin/subcribe/edit/{{ $subcribe->id }}" method="get"> 
+                                    <form action="{{route('subcribe.edit',['subcribe'=>$subcribe->id])}}" method="get"> 
                                         @csrf
                                         <button type="submit" class="btn btn-primary" id="changeAction">Edit</button> 
+                                    </form>
+                                </td>
+                                <td>
+                                    <form action="{{route('subcribe.destroy',['subcribe'=>$subcribe->id])}}" method="post"> 
+                                        @csrf
+                                        @method('delete')
+                                        <button type="submit" class="btn btn-primary" id="changeAction">Delete</button> 
                                     </form>
                                 </td>
 

@@ -7,9 +7,13 @@
             @if (session('success'))
                 <div id="hien-an" class="bg-success" style="height:50px"> {{ session('success') }}</div>
             @endif
-            <form id="formNewsVideo" class="" action="" method="post">
+            <form id="formNewsVideo" class=""
+                action="@isset($newsVideo){{ route('news-video.update', ['news_video' => $newsVideo->id]) }} @endisset"
+                method="post">
                 @csrf
-                @method('POST')
+                @isset($newsVideo)
+                    @method('put')
+                @endisset
                 <div class="mb-3">
                     <label for="" class="form-label">ID</label>
                     <input type="text" readonly name="id"
@@ -54,9 +58,14 @@
                 </div>
                 <div class="mb-3">
                     <label for="" class="form-label">Status</label>
-                    <input type="text" name="status"
-                        @isset($newsVideo) value="{{ $newsVideo->status }}" @endisset class="form-control"
-                        id="" aria-describedby="emailHelp">
+                    <select name="status" id="" class="form-control">
+                        <option value="1"
+                            @isset($newsVideo) @if ($newsVideo->status == 1) selected @endif @endisset>
+                            Hiển thị</option>
+                        <option value="0"
+                            @isset($newsVideo) @if ($newsVideo->status == 0) selected @endif @endisset>
+                            Ẩn</option>
+                    </select>
                 </div>
 
                 <button type="submit" class="btn btn-primary" id="">Thêm/Sửa</button>
@@ -96,6 +105,7 @@
                         <th scope="col">Category</th>
                         <th scope="col">Status</th>
                         <th scope="col">Edit</th>
+                        <th scope="col">Delete</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -105,15 +115,22 @@
                                 <th scope="row"> {{ $newsVideo->id }}</th>
                                 <td> {{ $newsVideo->title }}</th>
                                 <td>{{ $newsVideo->created_at }}</td>
-                                <td> 
-                                    <iframe src="{{$newsVideo->link}}" frameborder="0" width="60px" height="50px" encrypted-media></iframe> 
-                                </td>
-                                <td>  <img src="{{asset($newsVideo->image)}}" alt="no-image" style="width:50px"> </td>
-                                <td>{{ $newsVideo->category()->get()[0]->name }}</td>
-                                <td>{{ $newsVideo->status }}</td>
                                 <td>
-                                    <form action="/admin/news-video/edit/{{ $newsVideo->id }}" method="post"> @csrf<button
-                                            type="submit" class="btn btn-primary" id="changeAction">Edit</button> </form>
+                                    <iframe src="{{ $newsVideo->link }}" frameborder="0" width="60px" height="50px"
+                                        encrypted-media frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+                                </td>
+                                <td> <img src="{{ asset($newsVideo->image) }}" alt="no-image" style="width:50px"> </td>
+                                <td> {{ $newsVideo->category()->first()->name }} </td>
+                                <td id="news-video-status-{{$newsVideo->id}}">{{ $newsVideo->status == 1 ? 'Hiển thi' : 'Ẩn' }}</td>
+                                <td>
+                                    <form action="{{ route('news-video.edit', ['news_video' => $newsVideo->id]) }}"
+                                        method="get"> @csrf<button type="submit" class="btn btn-primary"
+                                            id="changeAction">Edit</button> </form>
+                                </td>
+                                <td>
+
+                                    <button type="submit" class="btn btn-primary btn-delete-newsvideo" id="changeAction"
+                                        data-id={{ $newsVideo->id }}>Delete</button>
                                 </td>
 
                             </tr>
@@ -146,4 +163,58 @@
             </nav>
         </div>
     </div>
+@endsection
+@section('script')
+    <script>
+        const deleteNewsVideo = document.querySelectorAll('.btn-delete-newsvideo');
+
+        deleteNewsVideo.forEach((btn) => {
+            btn.onclick = () => {
+                console.log(btn.dataset.id);
+                let confirmDel = confirm('Bạn chắc chắn muốn xóa danh mục này?');
+                if (confirmDel) {
+                    const xhttp = new XMLHttpRequest();
+                    xhttp.onload = () => {
+                        btn.parentNode.parentNode.remove();
+                        alert(JSON.parse(xhttp.responseText).success);
+                    }
+                    const token = '{{ csrf_token() }}'
+                    xhttp.open('delete', `/admin/news-video/${btn.dataset.id}?_token=${token}`)
+                    xhttp.send();
+                }
+            }
+        })
+    </script>
+    <script>
+        const url = new URL(window.location.href).pathname;
+        const part = url.split('/');
+        if (url === '/admin/' + part[2]) {
+            const form = document.getElementById('formNewsVideo');
+            form.method = "POST";
+        }
+        if (url === '/admin/news-video/' + part[3] + '/edit') {
+            const form = document.getElementById('formNewsVideo');
+            form.method = "POST";
+        }
+
+        const deleteNewsVideo = document.querySelectorAll('.btn-delete-newsvideo');
+
+        deleteNewsVideo.forEach((btn) => {
+            btn.onclick = () => {
+                console.log(btn.dataset.id);
+                let confirmDel = confirm('Bạn chắc chắn muốn xóa news-video này?');
+                if (confirmDel) {
+                    const xhttp = new XMLHttpRequest();
+                    xhttp.onload = () => {
+                        let newsVideo = document.getElementById(`news-video-status-${btn.dataset.id}`)
+                        newsVideo.textContent = "Ẩn";
+                        alert(JSON.parse(xhttp.responseText).success);
+                    }
+                    const token = '{{ csrf_token() }}'
+                    xhttp.open('delete', `/admin/news-video/${btn.dataset.id}?_token=${token}`)
+                    xhttp.send();
+                }
+            }
+        })
+    </script>
 @endsection

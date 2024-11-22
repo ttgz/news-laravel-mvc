@@ -38,8 +38,10 @@
 
 
                                 <td>
-                                    <form action="/admin/contact-request/edit/{{ $contactRequest->id }}" method="post">
-                                        @csrf<button type="submit" class="btn btn-primary" id="changeAction">
+                                    <form action="{{route('contact-request.update',['contact_request'=>$contactRequest->id])}}" method="post">
+                                        @csrf
+                                        @method('put') 
+                                        <button type="submit" class="btn btn-primary" id="changeAction">
                                         Phản hồi
                                         </button> </form>
                                 </td>

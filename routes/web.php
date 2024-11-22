@@ -5,59 +5,62 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\NewsController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AdminNewsController;
+use App\Http\Controllers\PostController;
+use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\NewsVideoController;
+use App\Http\Controllers\AdvertisementController;
+use App\Http\Controllers\ContactRequestController;
+use App\Http\Controllers\SubcribeController;
+use App\Http\Controllers\ContactController;
+
 use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
 
 
 Route::controller(HomeController::class)->group(function (){
     Route::get('/', 'index')->name('home');
     Route::get('/contact','contact')->name('contact');
-    Route::post('/contact/add-subcribe','addSubcribe');
-    Route::post('/contact/add-contact-requesst','addContactRequest');
 });
 
 Route::controller(NewsController::class)->group(function(){
-    Route::get('detail','detail')->name('detail');
-    Route::get('search','search')->name('search');
+    Route::get('/detail/{slug}','detail')->name('detail');
+    Route::get('/search','search')->name('search');
 });
 
 Route::controller(AdminController::class)->group(function(){
     Route::get('/admin','index')->name('admin.index');
-    Route::get('/admin/subcribe','showSubcribe')->name('admin.subcribe');
-    Route::get('/admin/subcribe/edit/{id}','showEditSubcribe');
-    Route::post('/admin/subcribe','addSubcribe');
-    Route::post('/admin/subcribe/edit','editSubcribe');
-    Route::get('/admin/subcribe/search','searchSubcribe');
-    Route::get('/admin/advertisement','showAdvertisement')->name('admin.advertisement');
-    Route::post('/admin/advertisement','addAdvertisement');
-    Route::post('/admin/advertisement','addAdvertisement');
-    Route::post('/admin/advertisement/edit/{id}','showEditAdvertisement');
-    Route::post('/admin/advertisement/edit','editAdvertisement');
-    Route::get('/admin/advertisement/search','searchAdvertisement');
     Route::get('/admin/contact','showContact')->name('admin.contact');
     Route::post('/admin/contact/edit','editContact');
-    Route::get('/admin/contact-request','showContactRequest')->name('admin.contact_request');
-    Route::post('/admin/contact-request/edit/{id}','editContactRequest');
-
-});
-
-Route::controller(AdminNewsController::class)->group(function(){
-
-    Route::get('/admin/category','category')->name('admin.category');
-    Route::post('/admin/category','addCategory');
-    Route::post('/admin/category/edit/{id}','showEditCategory');
-    Route::post('/admin/category/edit','editCategory');
-    Route::get('/admin/category/search','searchCategory');
-    Route::get('/admin/article','showArticle')->name('admin.article');
-    Route::post('/admin/article/','addArticle');
-    Route::post('/admin/article/edit/{id}','showEditArticle');
-    Route::post('/admin/article/edit','editArticle');
-    Route::get('/admin/article/search','searchArticle');
-    Route::get('/admin/news-video','showNewsVideo')->name('admin.news_video');
-    Route::post('/admin/news-video/edit/{id}','showEditNewsVideo');
-    Route::post('/admin/news-video/edit','editNewsVideo');
-    Route::post('/admin/news-video','addNewsVideo');
 });
 
 
- 
+
+Route::post('/upload/image',function(Request $request){ 
+            return response()->json(['error' => 'Không có file được upload']);
+})->name('ckeditor.upload');
+
+
+Route::get('/admin/category/search',[CategoryController::class,'searchCategory'])->name('category.search');
+Route::get('/admin/news-video/search',[NewsVideoController::class,'search'])->name('news-video.search');
+Route::get('/admin/advertisement/search',[AdvertisementController::class,'search'])->name('advertisement.search');
+Route::get('/admin/subcribe/search',[SubcribeController::class,'search'])->name('subcribe.search');
+Route::get('/admin/post/search',[PostController::class,'search'])->name('post.search');
+Route::resources([
+    '/admin/post' => PostController::class,
+    '/admin/category' => CategoryController::class,
+    '/admin/news-video'=>NewsVideoController::class,
+    '/admin/advertisement'=>AdvertisementController::class,
+    '/admin/contact-request'=>ContactRequestController::class,
+    '/admin/subcribe' => SubcribeController::class
+]);
+Route::get('/api/get-post-trending',[PostController::class,'getPostsTrending']);
+Route::get('/api/contact',[ContactController::class,'index']);
+Route::get('/api/category',[CategoryController::class,'category']);
+Route::get('/api/get-top-three-posts',[PostController::class,'getTopThreePosts']);
+Route::get('/api/get-post-last-modify',[PostController::class,'getPostLastModify']);
+Route::get('/api/get-post-popular',[PostController::class,'getPopularPost']);
+Route::get('/api/get-sum-post-of-category/{id}',[CategoryController::class,'countPostsOfCategory']);
+Route::get('/api/get-captcha',[CategoryController::class,'getCaptcha']);
+
+
  

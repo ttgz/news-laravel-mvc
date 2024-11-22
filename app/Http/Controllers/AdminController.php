@@ -4,11 +4,9 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use App\Models\Subcribe;
-use App\Models\Advertisement;
+use App\Models\Post;
 use App\Models\Contact;
-use App\Models\ContactRequest;
- 
+use App\Models\Category;
  
 
 class AdminController extends Controller
@@ -19,83 +17,27 @@ class AdminController extends Controller
 
     public function index()
     {
-        return view('admin.index');
+        $colors = [];
+        $perOfPostsInCategory = DB::connection('mysql')->select('select categories.id,categories.name, count(posts.id) as count from posts right join categories on posts.category = categories.id group by categories.id, categories.name');
+        for($i = 0; $i < count($perOfPostsInCategory);$i++){
+            $colors[$i] = 'rgb('.rand(0,255).','.rand(0,255).','.rand(0,255).')';
+        }
+        $totalPost =Post::totalOfPosts();
+        $totalCategory =Category::totalOfCategories();
+        return view('admin.index',['perOfPostsInCategory'=>$perOfPostsInCategory,'colors'=>$colors,'totalPost'=>$totalPost,'totalCategory'=>$totalCategory]);
     }
-   
+    
+    public function showContact(){
+        return view('admin.contact',['contact'=>Contact::first()]);
+    }
+    public function editContact(Request $req){
+        $contact = new Contact();
+        $contact->where('id',1)->update(['name'=>$req['name'],'numberphone'=>$req['numberphone'],'email'=>$req['email'],'address'=>$req['address'],'facebook'=>$req['facebook'],'about'=>$req['about'],'logo'=>$req['logo']]);
+        return redirect()->route('admin.contact')->with('success', 'Cập nhật thông tin thành công!!!');
+    }
     /**
      * Show the form for creating a new resource.
      */
-    public function showSubcribe(){
-        $subcribes = Subcribe::paginate(4);
-        return view('admin.subcribe',['subcribes'=>$subcribes]);
-    }
-    public function showEditSubcribe(string $id){
-        $subcribe = Subcribe::find($id);
-        $subcribes = Subcribe::paginate(4);
-        return view('admin.subcribe',['subcribes'=>$subcribes,'subcribe'=>$subcribe]);
-    }
-    public function addSubcribe(Request $req){
-        $subcribe = new Subcribe();
-        $subcribe->email = $req['email'];
-        $subcribe->save();
-        return redirect()->route('admin.subcribe')->with('success',"Thêm đăng ký thành công!");
-    }
-    public function editSubcribe(Request $req){
-        Subcribe::where('id',$req->id)->update(['email'=>$req->email]);
-        return redirect()->route('admin.subcribe')->with('success','Cập nhật đăng ký thành công!');
-    }
-    public function searchSubcribe(Request $req){
-        $result = Subcribe::where('email', 'like', $req['key'].'%')->paginate(4);
-       return view('admin.subcribe',['subcribes'=>$result]);
-    }
-
-    public function showAdvertisement(){
-        $advertisements = Advertisement::paginate(4);
-        return view('admin.advertisement',['advertisements'=>$advertisements]);
-    }
-
-    public function addAdvertisement(Request $req){
-        $ad = new Advertisement();
-        $ad->content = $req['content'];
-        $ad->image = $req['image'];
-        $ad->save();
-        return redirect()->route('admin.advertisement')->with('success','Thêm quảng cáo thành công');
-    }
-    public function showEditAdvertisement(string $id){
-        $ad = Advertisement::find($id);
-        $ads = Advertisement::paginate(4);
-        return view('admin.advertisement',['advertisements'=>$ads,'advertisement'=>$ad]);
-    }
-
-    public function editAdvertisement(Request $req){
-        Advertisement::where('id',$req['id'])->update(['content'=>$req['content'],'published_at'=>$req['published_at'],'image'=>$req['image'],'status'=>$req['status']]);
-        return redirect()->route('admin.advertisement')->with('success','Cập nhật quảng cáo thành công!!!');
-    }
-    public function searchAdvertisement(Request $req){
-        $result = Advertisement::where('content', 'like', $req['key'].'%')->paginate(4);
-        return view('admin.advertisement',['advertisements'=>$result]);
-    }  
-    
-   
-    public function showContact(){
-        $contact = Contact::find(1);
-        return view('admin.contact',['contact'=>$contact]);
-    }
-    public function editContact(Request $req){
-        Contact::where('id',1)->update(['name'=>$req['name'],'numberphone'=>$req['numberphone'],'email'=>$req['email'],'address'=>$req['address'],'facebook'=>$req['facebook'],'about'=>$req['about'],'logo'=>$req['logo']]);
-        return redirect()->route('admin.contact')->with('success','Cập nhật thông tin liên hệ thành công!!!');
-    }
-
-    public function showContactRequest(){
-        $contactRequestsHasNotRes = ContactRequest::where('is_response',0)->paginate(4);
-        $contactRequestsHasRes = ContactRequest::where('is_response',1)->paginate(4);
-
-        return view('admin.contact_request',['contactRequestsHasNotRes'=>$contactRequestsHasNotRes,'contactRequestsHasRes'=>$contactRequestsHasRes]);
-    }
-    public function editContactRequest(string $id){
-        ContactRequest::where('id',$id)->update(['is_response'=>1]);
-        return redirect()->route('admin.contact_request');
-    }
     
     public function create()
     {
